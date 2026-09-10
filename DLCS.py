@@ -152,8 +152,8 @@ def xuat_pdf_gom_nhom(ncc_name, group_df, ten_file_goc, output_dir):
     safe_file_goc = ten_file_goc.replace(".xml", "")
     pdf_filename = f"BB_{safe_file_goc}_{safe_ncc_name}.pdf"
     
-    full_path = os.path.join(output_dir, pdf_filename)
-    HTML(string=html_str).write_pdf(full_path)
+    pdf_bytes = HTML(string=html_str).write_pdf()
+    return pdf_filename, pdf_bytes
     
     return full_path
 
@@ -322,16 +322,39 @@ if uploaded_files:
 
         st.markdown("<br>", unsafe_allow_html=True)
         col1, col2 = st.columns(2)
+        
         with col1:
-            if st.button("✅ Duyệt & Xuất Biên Bản (Gom theo Nhà Cung Cấp)", use_container_width=True, type="primary"):
-                # --- LOGIC XUẤT PDF CHÍNH THỨC ---
-                for ncc, group_df in edited_chi_tiet.groupby("Nhà cung cấp"):
-                    st.toast(f"Đang tạo Biên bản cho: {ncc}...")
-                    xuat_pdf_gom_nhom(ncc, group_df, current_file.name, thu_muc_luu)
+            # Dùng st.empty() để tạo không gian chứa nút Download sau khi xử lý xong
+            download_placeholder = st.empty()
+            
+            if st.button("✅ Duyệt & Tạo Hồ Sơ (Gom nhóm)", use_container_width=True, type="primary"):
+                with st.spinner("Đang tạo PDF và đóng gói... Team ráng đợi xíu nha!"):
+                    import io
+                    import zipfile
                     
-                st.success(f"Đã xuất thành công các file PDF vào thư mục: {thu_muc_luu}")
-                st.session_state.current_index += 1
-                st.rerun() 
+                    # Tạo một bộ nhớ đệm để chứa file ZIP
+                    zip_buffer = io.BytesIO()
+                    
+                    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+                        for ncc, group_df in edited_chi_tiet.groupby("Nhà cung cấp"):
+                            # Gọi hàm tạo PDF, nhận về tên file và dữ liệu nhị phân (bytes)
+                            pdf_filename, pdf_bytes = xuat_pdf_gom_nhom(ncc, group_df, current_file.name, "")
+                            
+                            # Ghi file PDF đó vào thẳng trong cục ZIP
+                            zip_file.writestr(pdf_filename, pdf_bytes)
+                    
+                    st.success("🎉 Đã gom xong toàn bộ biên bản!")
+                    
+                    # Hiện nút cho phép tải cục ZIP đó về máy
+                    safe_ten_goc = current_file.name.replace('.xml', '')
+                    download_placeholder.download_button(
+                        label="⬇️ TẢI FILE ZIP BIÊN BẢN VỀ MÁY",
+                        data=zip_buffer.getvalue(),
+                        file_name=f"HoSo_ThanhLy_{safe_ten_goc}.zip",
+                        mime="application/zip",
+                        type="primary",
+                        use_container_width=True
+                    )
                 
         with col2:
             if st.button("⏭️ Bỏ qua file này", use_container_width=True):
