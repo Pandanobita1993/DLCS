@@ -326,7 +326,7 @@ if uploaded_files:
                     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
                         for ncc, group_df in edited_chi_tiet.groupby("Nhà cung cấp"):
                             # Gọi hàm tạo PDF, nhận về tên file và dữ liệu nhị phân (bytes)
-                            pdf_filename, pdf_bytes = xuat_pdf_gom_nhom(ncc, group_df, current_file.name, "")
+                            pdf_filename, pdf_bytes = xuat_pdf_gom_nhom(ncc, group_df, current_file.name)
                             
                             # Ghi file PDF đó vào thẳng trong cục ZIP
                             zip_file.writestr(pdf_filename, pdf_bytes)
