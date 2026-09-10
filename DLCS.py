@@ -38,10 +38,8 @@ def lay_ncc_mac_dinh(ten_dv):
     return DANH_MUC_NCC["Khác"][0]
 
 # --- 2. HÀM TẠO FILE PDF (GOM NHÓM THEO BÀ CON & NGẮT TRANG) ---
-def xuat_pdf_gom_nhom(ncc_name, group_df, ten_file_goc, output_dir):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-        
+def xuat_pdf_gom_nhom(ncc_name, group_df, ten_file_goc):
+    # Đã xóa đoạn os.makedirs vì mình không lưu vào ổ cứng nữa
     htx_name = "HTX DU LỊCH NÔNG NGHIỆP CỒN SƠN"
     tong_tien = group_df["Thành tiền (VNĐ)"].sum()
     
@@ -51,23 +49,17 @@ def xuat_pdf_gom_nhom(ncc_name, group_df, ten_file_goc, output_dir):
     <head>
         <meta charset="utf-8">
         <style>
-            /* Định dạng trang A4 khổ đứng */
             @page {{ size: A4 portrait; margin: 20mm 15mm; }}
             body {{ font-family: 'Times New Roman', serif; font-size: 13pt; line-height: 1.5; }}
-            
             .header-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
             .header-table td {{ vertical-align: top; text-align: center; }}
             .bold {{ font-weight: bold; }}
             .title {{ text-align: center; font-size: 16pt; font-weight: bold; margin: 20px 0 10px 0; }}
-            
             table.data-table {{ width: 100%; border-collapse: collapse; margin: 15px 0; }}
             table.data-table th, table.data-table td {{ border: 1px solid #000; padding: 8px; text-align: left; }}
             table.data-table th {{ background-color: #f0f0f0; text-align: center; }}
-            
             .signature-table {{ width: 100%; margin-top: 30px; text-align: center; }}
             .signature-table td {{ width: 50%; vertical-align: top; }}
-            
-            /* CSS Ép ngắt trang */
             .page-break {{ page-break-before: always; break-before: page; }}
         </style>
     </head>
@@ -93,7 +85,6 @@ def xuat_pdf_gom_nhom(ncc_name, group_df, ten_file_goc, output_dir):
             </tr>
     """
     
-    # Đổ danh sách dịch vụ chi tiết vào bảng
     for i, row in enumerate(group_df.iterrows()):
         r = row[1]
         html_str += f"""
@@ -121,7 +112,6 @@ def xuat_pdf_gom_nhom(ncc_name, group_df, ten_file_goc, output_dir):
             </tr>
         </table>
 
-        <!-- Lệnh ngắt trang sang trang thứ 2 -->
         <div class="page-break"></div>
         
         <!-- =================== TRANG 2: BIÊN BẢN THANH LÝ =================== -->
@@ -147,15 +137,13 @@ def xuat_pdf_gom_nhom(ncc_name, group_df, ten_file_goc, output_dir):
     </html>
     """
     
-    # Định dạng tên file: BB_TenFileGoc_TenNCC.pdf
     safe_ncc_name = ncc_name.replace(" ", "_").replace("/", "")
     safe_file_goc = ten_file_goc.replace(".xml", "")
     pdf_filename = f"BB_{safe_file_goc}_{safe_ncc_name}.pdf"
     
+    # Trả về tên file và chuỗi byte để nén ZIP
     pdf_bytes = HTML(string=html_str).write_pdf()
     return pdf_filename, pdf_bytes
-    
-    return full_path
 
 # --- 3. ĐỌC XML VÀ XỬ LÝ (Tương tự bản trước) ---
 def doc_xml_va_phan_loai(file_object):
