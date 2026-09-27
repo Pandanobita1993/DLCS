@@ -244,18 +244,17 @@ if not st.session_state.logged_in:
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         st.markdown("<h2 style='text-align: center;'>🔐 Đăng nhập Hệ thống</h2>", unsafe_allow_html=True)
+        
+        # LÔI 2 Ô NHẬP LIỆU RA NGOÀI NÚT BẤM
+        user_input = st.text_input("Tên đăng nhập (Gợi ý: admin)")
+        pass_input = st.text_input("Mật khẩu (Gợi ý: conson2026)", type="password")
+        
         if st.button("🚀 Đăng nhập", use_container_width=True, type="primary"):
-            if check_login(st.text_input("Tên đăng nhập"), st.text_input("Mật khẩu", type="password")):
+            if check_login(user_input, pass_input):
                 st.session_state.logged_in = True
                 st.rerun()
-            else: st.error("Sai tài khoản/mật khẩu!")
-else:
-    st.sidebar.markdown("### 👤 Quản trị viên")
-    if st.sidebar.button("🚪 Đăng xuất"):
-        st.session_state.logged_in = False
-        st.rerun()
-        
-    menu = st.sidebar.radio("📌 ĐIỀU HƯỚNG", ["📑 Xử lý Hóa đơn XML", "⚙️ Cài đặt Gói Tour (Admin)"])
+            else: 
+                st.error("Sai tài khoản/mật khẩu!")
     
     # ---------------------------------------------------------
     # TRANG 1: XỬ LÝ HÓA ĐƠN
